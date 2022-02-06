@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "718378003684",
+    "project_id": "trail-efb77",
+    "storage_bucket": "trail-efb77.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:718378003684:android:a416b21d316c5f681590f1",
+        "android_client_info": {
+          "package_name": "com.firstapp.Trailrenderer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "718378003684-scues75mul0acrldihl9drc458jnnntu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkc6LQRBb46SmTyR-sBVtNbNyshAx3y18"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "718378003684-scues75mul0acrldihl9drc458jnnntu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
