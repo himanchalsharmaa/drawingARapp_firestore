@@ -29,6 +29,7 @@ public class TraileRenderer100 : MonoBehaviour
     private GameObject trailHolder;
     private ARAnchor localanchor;
     private List<List<Vector3>> trailInfo = new List<List<Vector3>> ();
+    private List<List<Vector3>> trailinfoquery=new List<List<Vector3>>();
     private List<Vector3> trailStart=new List<Vector3>();
     private List<Vector3> temp=new List<Vector3>();
     private List<GameObject> objectList=new List<GameObject>();
@@ -64,7 +65,7 @@ public class TraileRenderer100 : MonoBehaviour
         if(!drawing)
         {
         if(Input.touchCount>0){
-            Touch touch=Input.GetTouch(0);
+        Touch touch=Input.GetTouch(0);
         if(touch.phase==TouchPhase.Stationary || touch.phase==TouchPhase.Moved ){
             touchPosition=Input.GetTouch(0).position;
                 if(arRaycastManager.Raycast(touchPosition,arRaycastHits,TrackableType.PlaneWithinPolygon)){
@@ -95,13 +96,16 @@ public class TraileRenderer100 : MonoBehaviour
                 }     
         }
         else if(touch.phase==TouchPhase.Ended)  {
+            touchPosition=Input.GetTouch(0).position;
+            if(arRaycastManager.Raycast(touchPosition,arRaycastHits,TrackableType.PlaneWithinPolygon)){ //else it counts touches outside too if it taps
                 trailInfo.Add(temp);
                 //temp.Clear();
                 j+=1;
                 lineRenderer.positionCount = positionc;     //VERY IMPORTANT: PositionCount should not be extraa, if you don't assign then some weird floating line renderer will exist to equalize
                 positionc=0;
                 drawing=true;
-                StartCoroutine(createtrail());
+                info.text=""+trailInfo.Count;
+                StartCoroutine(createtrail());}
             }
 
         }}
@@ -117,10 +121,11 @@ public class TraileRenderer100 : MonoBehaviour
     public void DestroyTrail(){
         trailStart.Clear();
         trailInfo.Clear();
+        trailinfoquery.Clear();
         for(int i=0;i<objectList.Count;i++){
         Destroy(objectList[i]);
         }
-       objectList.Clear();// *BUGS A LOT* JUST LEAVE OBJECT LIST AS IT IS DONT CLEAR FOR NOW(04-02-2022)
+        objectList.Clear();
         spawned=false;
         drawing=false;
         drawn=0;
@@ -131,6 +136,10 @@ public class TraileRenderer100 : MonoBehaviour
         firestore();
     }
     async void firestore(){
+        Query querres=db.Collection("coll");
+        trailrendererstate.text="trying to get snapshot";
+        QuerySnapshot querysnap=await querres.GetSnapshotAsync();
+        int c=querysnap.Count;
         //Subcollection for each letter,
         List<float> xcoords;
         List<float> ycoords;
@@ -159,7 +168,8 @@ public class TraileRenderer100 : MonoBehaviour
                 ycoordinate=ycoords.ToArray(),
                 zcoordinate=zcoords.ToArray()
             } ;
-           string docname="doc"+i;
+           int d=i+c;
+           string docname="doc"+d;
            info.text="trying to set async";
            await db.Collection("coll").Document(docname).SetAsync(goingtodocref);
            info.text="set doc async";
@@ -168,6 +178,20 @@ public class TraileRenderer100 : MonoBehaviour
         }
         
     }
+    public void fireclearcall(){
+        clearfirestore();
+    }
+    async void clearfirestore(){
+        Query querres=db.Collection("coll");
+        trailrendererstate.text="trying to get snapshot";
+        QuerySnapshot querysnap=await querres.GetSnapshotAsync();
+        foreach(DocumentSnapshot docsnap in querysnap.Documents){
+            string id=docsnap.Id;
+            await db.Collection("coll").Document(id).DeleteAsync();
+        }
+    }
+
+
     public void querycall(){
         querytest();
     }
@@ -188,7 +212,6 @@ public class TraileRenderer100 : MonoBehaviour
         }
         trailrendererstate.text="got in xquery";
         info.text="this:"+xquery.Count;
-        List<List<Vector3>> trailinfoquery=new List<List<Vector3>>();
         trailrendererstate.text="trying to create trailinfo:";
         for(int i=0;i<xquery.Count;i++){
             List<Vector3> tempo=new List<Vector3>();
@@ -209,6 +232,7 @@ public class TraileRenderer100 : MonoBehaviour
     IEnumerator createquerytrail(List<List<Vector3>> trailinfoquery){
             for(int i=0;i<trailinfoquery.Count;i++){
             GameObject querytrailHolder=Instantiate(cube,trailinfoquery[i][0],Quaternion.identity);
+            objectList.Add(querytrailHolder);
             LineRenderer querylineRenderer=querytrailHolder.AddComponent<LineRenderer>();
             querylineRenderer.startWidth=0.007f;
             querylineRenderer.positionCount=trailinfoquery[i].Count;
@@ -236,7 +260,8 @@ public class TraileRenderer100 : MonoBehaviour
         
         //info.text=trailInfo.Count+":beforetemp:"+trailInfo[1].Count;
         temp=new List<Vector3>();
-        StopCoroutine(createtrail());        
+        StopCoroutine(createtrail());     
+        trailrendererstate.text="Count:"+trailInfo.Count;   
         //numposstored.text=trailInfo.Count+":aftertemp   :"+trailInfo[1].Count;
         //spawnedObject.SetActive(false);
     }
